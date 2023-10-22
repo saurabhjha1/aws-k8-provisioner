@@ -1,5 +1,15 @@
 The script only works on ubuntu and tested with ubuntu 22.04
 
+* create conda/py env and activate it
+```shell
+conda create -n aws python=3.11
+conda activate aws
+```
+
+* update variables to point to this environment and modify the line to  
+
+    ansible_python_interpreter: "/home/<username>/anaconda3/envs/aws/bin/python"
+
 * Install ansible
 ```shell 
 ansible-galaxy collection install amazon.aws
