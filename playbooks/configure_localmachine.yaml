@@ -1,0 +1,69 @@
+---
+- name: Set up main machine
+  hosts: localhost
+  vars_files:
+    - variables.yml
+  tasks:
+    - name: Update packages
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Install AWS CLI
+      apt:
+        name: awscli
+        state: present
+      become: true
+
+    - name: Install curl
+      apt:
+        name: curl
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+      become: true
+
+    - name: Install jq for parsing JSON
+      apt:
+        name: jq
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+      become: true
+
+
+    - name: Download kops
+      get_url:
+        url: "https://github.com/kubernetes/kops/releases/download/{{ kops_version }}/kops-linux-amd64"
+        dest: "./kops"
+        mode: '0755'
+
+    - name: Move kops to /usr/local/bin
+      command: mv ./kops /usr/local/bin/
+      become: true
+
+
+    - name: Download kubectl
+      get_url:
+        url: "https://storage.googleapis.com/kubernetes-release/release/{{ kubectl_version }}/bin/linux/amd64/kubectl"
+        dest: "./kubectl"
+        mode: '0755'
+
+    - name: Move kubectl to /usr/local/bin
+      command: mv ./kubectl /usr/local/bin/
+      become: true
+
+    - name: Download and install Linkerd
+      shell: curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+      args:
+        executable: /bin/bash
+        creates: "{{ ansible_env.HOME }}/.linkerd2/bin/linkerd"
+
+    - name: Update PATH for Linkerd
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'export PATH=$PATH:{{ ansible_env.HOME }}/.linkerd2/bin'
+        create: yes
+
+    - name: Source bashrc to update PATH
+      shell: source "{{ ansible_env.HOME }}/.bashrc"
+      args:
+        executable: /bin/bash

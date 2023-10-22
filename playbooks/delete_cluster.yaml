@@ -1,0 +1,19 @@
+---
+- name: Delete Kubernetes Cluster using kops
+  hosts: localhost
+  vars_files:
+    - variables.yml
+    - secret.yaml
+  vars_prompt:
+    - name: "cluster_name"
+      prompt: "Enter the cluster name you want to delete [full name]"
+      private: no
+      
+  tasks:
+    - name: Confirm cluster deletion
+      pause:
+        prompt: "Are you sure you want to delete the cluster {{ cluster_name }}? (Press enter to continue or Ctrl+C to abort)"
+      
+    - name: Delete the cluster
+      command:
+        cmd: kops delete cluster --name={{ cluster_name }} --yes --state s3://{{ s3name }}

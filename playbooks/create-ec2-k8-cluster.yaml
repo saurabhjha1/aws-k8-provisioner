@@ -1,0 +1,73 @@
+---
+- hosts: localhost
+  vars:
+    state_store: "s3://{{ s3name }}"
+  vars_files:
+    - variables.yml
+    - secret.yaml
+
+  vars_prompt:
+    - name: "inp"
+      prompt: "On entering a number (less than 10), cluster with that many nodes will be created. Else cluster creation will be aborted"
+      private: no
+
+    - name: "cluster_name"
+      prompt: "provide the partial cluster identifier"
+      private: no
+
+    - name: "instance_type"
+      prompt: "provide the instance type (m4.large, m4.xlarge, ...)"
+      private: no
+  tasks:
+    - name: Validate input is a number
+      fail:
+        msg: "ERROR: Entered - {{ inp }} - Not a number for number of nodes."
+      when: inp is not number and inp | int == 0
+
+    - name: Validate input is less than 10
+      fail:
+        msg: "ERROR: Tried to create more than 10 nodes. Not allowing!"
+      when: inp | int >= 10
+
+    - name: Create kops cluster
+      shell: |
+        set -x
+        kops create cluster {{ cluster_name }}-{{ instance_type }}-aws.k8s.local \
+        --zones {{ zones }} \
+        --ssh-public-key ~/.ssh/id_rsa.pub \
+        --master-size {{ control_node_type }} \
+        --node-size {{ instance_type }} \
+        --node-count {{ inp }} \
+        --networking {{ network_cni }} \
+        --ssh-public-key {{ ssh_key_for_cluster }} \
+        --state={{ state_store }} 
+
+
+    - name: Build the Cluster
+      command:
+        cmd: kops update cluster --name={{ cluster_name }}-{{ instance_type }}-aws.k8s.local --state={{ state_store }} --yes --internal
+      register: kops_output
+
+    - name: Display kops logs
+      debug:
+        msg: "{{ kops_output.stdout_lines }}"
+
+    - name: export kubeconfig
+      command:
+        cmd: kops export --name {{ cluster_name }}-{{ instance_type }}-aws.k8s.local kubecfg --admin --state s3://{{ s3name }} --kubeconfig /tmp/{{ cluster_name }}-{{ instance_type }}-aws.yaml
+
+    - name: Validate the cluster
+      command:
+        cmd: |
+          kops export --name {{ cluster_name }}-{{ instance_type }}-aws.k8s.local kubecfg --admin --state s3://{{ s3name }} --kubeconfig /tmp/{{ cluster_name }}-{{ instance_type }}-aws.yaml && \
+          KUBECONFIG=/tmp/{{ cluster_name }}-{{ instance_type }}-aws.yaml kops validate cluster --state={{ state_store }}
+      register: validate_output
+      retries: 60
+      delay: 10
+      until: "'is ready' in validate_output.stdout"
+
+    - name: Show Additional Instructions
+      debug:
+        msg:
+          - "You can ssh into any of the machines in the cluster, using ~/.ssh/id_rsa."
+          - "You can destroy the cluster by running kops delete cluster --name <cluster_name> --yes."

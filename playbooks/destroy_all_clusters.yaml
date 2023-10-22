@@ -1,0 +1,28 @@
+---
+- name: Delete All Kubernetes Clusters Managed by kops
+  hosts: localhost
+  vars_files:
+    - variables.yml
+    - secret.yaml
+  gather_facts: false
+  tasks:
+    - name: Fetch list of all kops clusters
+      command:
+        cmd: kops get clusters --output json --state s3://{{ s3name }}
+      register: cluster_list_output
+      ignore_errors: true
+
+    - name: Parse JSON output to list of cluster names
+      set_fact:
+        cluster_names: "{{ cluster_list_output.stdout | from_json | map(attribute='metadata.name') | list }}"
+      when: cluster_list_output.stdout != ""
+
+    - name: Confirm deletion of all clusters
+      pause:
+        prompt: "Are you sure you want to delete ALL clusters {{ cluster_names }}? (Press enter to continue or Ctrl+C to abort)"
+
+    - name: Delete kops clusters
+      command:
+        cmd: kops delete cluster --name={{ item }} --yes --state s3://{{ s3name }}
+      loop: "{{ cluster_names }}"
+      when: cluster_names is defined
