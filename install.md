@@ -8,7 +8,7 @@ conda activate aws
 
 * update variables to point to this environment and modify the line to  
 
-    ansible_python_interpreter: "/home/<username>/anaconda3/envs/aws/bin/python"
+    ansible_python_interpreter: "/home/\<username\>/anaconda3/envs/aws/bin/python"
 
 * Install ansible
 ```shell 
