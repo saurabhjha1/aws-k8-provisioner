@@ -1,4 +1,4 @@
-The script only works on ubuntu and tested with ubuntu 22.04
+The script only works on ubuntu/macosx and tested with ubuntu 22.04/sonoma
 
 * create conda/py env and activate it
 ```shell
