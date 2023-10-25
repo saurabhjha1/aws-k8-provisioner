@@ -1,13 +1,20 @@
----
 - name: List all kops clusters
   hosts: localhost
   vars_files:
     - variables.yml
     - secret.yaml
   tasks:
+    - name: Set kops path for Linux
+      set_fact:
+        kops_path: "/usr/local/bin/kops"
+      when: ansible_distribution == 'Ubuntu'
+    - name: Set kops path for macOS
+      set_fact:
+        kops_path: "/opt/homebrew/bin/kops"
+      when: ansible_distribution == 'MacOSX'
     - name: Run kops get clusters to list all clusters
       command:
-        cmd: kops get clusters --state s3://{{ s3name}}
+        cmd: "{{ kops_path }} get clusters --state s3://{{ s3name}} "
       register: clusters_output
 
     - name: Display all clusters

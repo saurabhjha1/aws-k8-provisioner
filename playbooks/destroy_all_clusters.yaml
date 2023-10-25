@@ -6,9 +6,18 @@
     - secret.yaml
   gather_facts: false
   tasks:
+    - name: Set kops path for Linux
+      set_fact:
+        kops_path: "/usr/local/bin/kops"
+      when: ansible_distribution == 'Ubuntu'
+    - name: Set kops path for macOS
+      set_fact:
+        kops_path: "/opt/homebrew/bin/kops"
+      when: ansible_distribution == 'MacOSX'
+
     - name: Fetch list of all kops clusters
       command:
-        cmd: kops get clusters --output json --state s3://{{ s3name }}
+        cmd: "{{ kops_path }} get clusters --output json --state s3://{{ s3name }}"
       register: cluster_list_output
       ignore_errors: true
 
@@ -23,6 +32,6 @@
 
     - name: Delete kops clusters
       command:
-        cmd: kops delete cluster --name={{ item }} --yes --state s3://{{ s3name }}
+        cmd: "{{ kops_path }} delete cluster --name={{ item }} --yes --state s3://{{ s3name }}"
       loop: "{{ cluster_names }}"
       when: cluster_names is defined

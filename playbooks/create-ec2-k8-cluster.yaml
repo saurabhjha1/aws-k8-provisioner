@@ -19,6 +19,15 @@
       prompt: "provide the instance type (m4.large, m4.xlarge, ...)"
       private: no
   tasks:
+    - name: Set kops path for Linux
+      set_fact:
+        kops_path: "/usr/local/bin/kops"
+      when: ansible_distribution == 'Ubuntu'
+    - name: Set kops path for macOS
+      set_fact:
+        kops_path: "/opt/homebrew/bin/kops"
+      when: ansible_distribution == 'MacOSX'
+
     - name: Validate input is a number
       fail:
         msg: "ERROR: Entered - {{ inp }} - Not a number for number of nodes."
@@ -31,8 +40,8 @@
 
     - name: Create kops cluster
       shell: |
-        set -x
-        kops create cluster {{ cluster_name }}-{{ instance_type }}-aws.k8s.local \
+        "set -x
+        {{ kops_path }} create cluster {{ cluster_name }}-{{ instance_type }}-aws.k8s.local \
         --zones {{ zones }} \
         --ssh-public-key ~/.ssh/id_rsa.pub \
         --master-size {{ control_node_type }} \
@@ -40,12 +49,12 @@
         --node-count {{ inp }} \
         --networking {{ network_cni }} \
         --ssh-public-key {{ ssh_key_for_cluster }} \
-        --state={{ state_store }} 
+        --state={{ state_store }} "
 
 
     - name: Build the Cluster
       command:
-        cmd: kops update cluster --name={{ cluster_name }}-{{ instance_type }}-aws.k8s.local --state={{ state_store }} --yes --internal
+        cmd: "{{ kops_path }} update cluster --name={{ cluster_name }}-{{ instance_type }}-aws.k8s.local --state={{ state_store }} --yes --internal"
       register: kops_output
 
     - name: Display kops logs
@@ -54,13 +63,14 @@
 
     - name: export kubeconfig
       command:
-        cmd: kops export --name {{ cluster_name }}-{{ instance_type }}-aws.k8s.local kubecfg --admin --state s3://{{ s3name }} --kubeconfig /tmp/{{ cluster_name }}-{{ instance_type }}-aws.yaml
+        cmd: "{{ kops_path }} export --name {{ cluster_name }}-{{ instance_type }}-aws.k8s.local kubecfg --admin --state s3://{{ s3name }} --kubeconfig /tmp/{{ cluster_name }}-{{ instance_type }}-aws.yaml"
 
     - name: Validate the cluster
       command:
         cmd: |
-          kops export --name {{ cluster_name }}-{{ instance_type }}-aws.k8s.local kubecfg --admin --state s3://{{ s3name }} --kubeconfig /tmp/{{ cluster_name }}-{{ instance_type }}-aws.yaml && \
-          KUBECONFIG=/tmp/{{ cluster_name }}-{{ instance_type }}-aws.yaml kops validate cluster --state={{ state_store }}
+          "{{ kops_path }} validate cluster --state={{ state_store }}"
+        environment:
+          KUBECONFIG: /tmp/{{ cluster_name }}-{{ instance_type }}-aws.yaml
       register: validate_output
       retries: 60
       delay: 10

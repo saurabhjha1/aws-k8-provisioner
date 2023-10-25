@@ -1,6 +1,7 @@
 ---
 - name: Set up main machine
   hosts: localhost
+  gather_facts: true
   vars_files:
     - variables.yml
   tasks:

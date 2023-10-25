@@ -10,10 +10,19 @@
       private: no
       
   tasks:
+    - name: Set kops path for Linux
+      set_fact:
+        kops_path: "/usr/local/bin/kops"
+      when: ansible_distribution == 'Ubuntu'
+    - name: Set kops path for macOS
+      set_fact:
+        kops_path: "/opt/homebrew/bin/kops"
+      when: ansible_distribution == 'MacOSX'
+      
     - name: Confirm cluster deletion
       pause:
         prompt: "Are you sure you want to delete the cluster {{ cluster_name }}? (Press enter to continue or Ctrl+C to abort)"
       
     - name: Delete the cluster
       command:
-        cmd: kops delete cluster --name={{ cluster_name }} --yes --state s3://{{ s3name }}
+        cmd: "{{ kops_path }} delete cluster --name={{ cluster_name }} --yes --state s3://{{ s3name }}"
