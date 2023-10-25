@@ -12,7 +12,6 @@ conda activate aws
 
 * Install ansible
 ```shell
-python3 -m pip install --user ansible
 ansible-galaxy collection install amazon.aws
 ```
 
