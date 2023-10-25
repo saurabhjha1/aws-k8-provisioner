@@ -11,7 +11,8 @@ conda activate aws
     ansible_python_interpreter: "/home/\<username\>/anaconda3/envs/aws/bin/python"
 
 * Install ansible
-```shell 
+```shell
+python3 -m pip install --user ansible
 ansible-galaxy collection install amazon.aws
 ```
 
