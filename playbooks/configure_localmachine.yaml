@@ -4,52 +4,83 @@
   vars_files:
     - variables.yml
   tasks:
-    - name: Update packages
-      apt:
-        update_cache: yes
-      become: true
+    # Determine the shell being used
+    - name: Determine shell
+      command: echo $SHELL
+      register: shell_type
+      changed_when: False
 
-    - name: Install AWS CLI
+    - name: Set shell fact
+      set_fact:
+        user_shell: "{{ shell_type.stdout | regex_replace('.*/', '') }}"
+
+    - name: Install AWS CLI (Ubuntu)
       apt:
         name: awscli
         state: present
+      when: ansible_distribution == 'Ubuntu'
       become: true
 
-    - name: Install curl
+    - name: Install AWS CLI (macOS)
+      homebrew:
+        name: awscli
+        state: present
+      when: ansible_distribution == 'MacOSX'
+
+    - name: Install curl (Ubuntu)
       apt:
         name: curl
         state: present
       when: ansible_distribution == 'Ubuntu'
       become: true
 
-    - name: Install jq for parsing JSON
+    - name: Install jq (Ubuntu)
       apt:
         name: jq
         state: present
       when: ansible_distribution == 'Ubuntu'
       become: true
 
+    # kops and kubectl downloads remain the same
 
-    - name: Download kops
+    - name: Download kops (Ubuntu)
       get_url:
         url: "https://github.com/kubernetes/kops/releases/download/{{ kops_version }}/kops-linux-amd64"
         dest: "./kops"
         mode: '0755'
+      when: ansible_distribution == 'Ubuntu'
 
-    - name: Move kops to /usr/local/bin
+    - name: Move kops to /usr/local/bin (Ubuntu)
       command: mv ./kops /usr/local/bin/
+      when: ansible_distribution == 'Ubuntu'
       become: true
 
+    # Install kops using brew (macOS)
+    - name: Install kops (macOS)
+      homebrew:
+        name: kops
+        state: present
+      when: ansible_distribution == 'MacOSX'
 
-    - name: Download kubectl
+    # Download and move kubectl (Ubuntu)
+    - name: Download kubectl (Ubuntu)
       get_url:
         url: "https://storage.googleapis.com/kubernetes-release/release/{{ kubectl_version }}/bin/linux/amd64/kubectl"
         dest: "./kubectl"
         mode: '0755'
+      when: ansible_distribution == 'Ubuntu'
 
-    - name: Move kubectl to /usr/local/bin
+    - name: Move kubectl to /usr/local/bin (Ubuntu)
       command: mv ./kubectl /usr/local/bin/
+      when: ansible_distribution == 'Ubuntu'
       become: true
+
+    # Install kubectl using brew (macOS)
+    - name: Install kubectl (macOS)
+      homebrew:
+        name: kubectl
+        state: present
+      when: ansible_distribution == 'MacOSX'
 
     - name: Download and install Linkerd
       shell: curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
@@ -57,13 +88,31 @@
         executable: /bin/bash
         creates: "{{ ansible_env.HOME }}/.linkerd2/bin/linkerd"
 
-    - name: Update PATH for Linkerd
+    # Update PATH for Linkerd in bash
+    - name: Update PATH for Linkerd in bash
       lineinfile:
         path: "{{ ansible_env.HOME }}/.bashrc"
         line: 'export PATH=$PATH:{{ ansible_env.HOME }}/.linkerd2/bin'
         create: yes
+      when: user_shell == 'bash'
 
+    # Update PATH for Linkerd in zsh
+    - name: Update PATH for Linkerd in zsh
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.zshrc"
+        line: 'export PATH=$PATH:{{ ansible_env.HOME }}/.linkerd2/bin'
+        create: yes
+      when: user_shell == 'zsh'
+        # Source bashrc to update PATH (bash)
     - name: Source bashrc to update PATH
       shell: source "{{ ansible_env.HOME }}/.bashrc"
       args:
         executable: /bin/bash
+      when: user_shell == 'bash'
+
+    # Source zshrc to update PATH (zsh)
+    - name: Source zshrc to update PATH
+      shell: source {{ ansible_env.HOME }}/.zshrc
+      args:
+        executable: /bin/zsh
+      when: user_shell == 'zsh'
