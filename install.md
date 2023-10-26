@@ -20,24 +20,17 @@ ansible-galaxy collection install amazon.aws
 python -m pip install -r requirements.txt
 ```
 
-* **one time setup** set up the machine. Sets the localhost machine from which you plan to run aws-cli, kops and kubectl commands
+Makefile help
+====
+run make with following options
 
-```shell
-ansible-playbook -i localhost, playbooks/configure_localmachine.yaml -K
-```
-
-* configure secret.yaml file by copying the secret.yaml.example file and filling in the values
-```shell
-mv playbooks/secret.yaml.example playbooks/secret.yaml
-```
-* **one time setup** configure aws user on the localhost machine.
-```shell 
-ansible-playbook -i localhost, playbooks/configure-aws-user-and-storage.yaml -K
-```
-
-* create a cluster
-```shell
-ansible-playbook -i localhost, playbooks/create-ec2-k8-cluster.yaml -K
-```
-
-* other commands can be launched similarly by running other playbooks such as list_clusters, destroy_all_clusters, delete_cluster, export_kubeconfig etc.
+* configure_localmachine -- [onetime] configures the localmachine to run this repository
+* configure_aws_access -- [onetime] configure aws creddentials
+* create -- creates the cluster
+* delete -- deletes the clister
+* destroy_all_clusters -- destroys all clusters stored in s3 bucket
+* get_kcfg -- gets the kubeconfig file in /tmp/<cluster-name>
+* list_clusters -- lists the clusters stored in s3
+* start/suspend/resize -- resize, start or suspend the cluster
+* install_istio_monitoring -- install istio/prometheus/cadvisor monitoring
+* help   - Display this help information
