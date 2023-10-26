@@ -7,7 +7,7 @@
 
   vars_prompt:
     - name: "cluster_name"
-      prompt: "provide the partial cluster identifier"
+      prompt: "provide the cluster name"
       private: no
 
 
@@ -18,14 +18,8 @@
 
     - name: "user_confirmation"
       pause:
-        prompt: "Current kubectl context is '{{ ansible_env.KUBECONFIG | default('default') }}', do you want to proceed?"
-        default: "yes"
-        private: no
+        prompt: "Current kubectl context is '{{ ansible_env.KUBECONFIG | default('default') }}', press enter to continue"
 
-    - name: Abort if user does not confirm
-      fail:
-        msg: "User did not confirm. Aborting."
-      when: user_confirmation | lower != 'yes'
 
     - name: Check if Helm is installed
       command: which helm

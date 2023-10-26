@@ -42,3 +42,6 @@ stop: list_clusters
 resize: list_clusters
 	@echo "edit the file to set size both controller and workers to the desired value with min = max values = desired value"
 	ansible-playbook playbooks/edit_clustersize.yaml 
+
+install_istio_monitoring: list_clusters
+	ansible-playbook playbooks/install-istio-based-monitoring.yaml
