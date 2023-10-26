@@ -9,7 +9,7 @@ conda activate aws
 * update variables to point to this environment (`which python`) and modify the line to  
 
     ansible_python_interpreter: "/home/\<username\>/anaconda3/envs/aws/bin/python"
-* modify vars and secret.yaml file. You need to create secret.yaml file by `mv secret.yaml.example secret.yaml`
+* modify vars and secret.yaml file. You need to create secret.yaml file by `cp secret.yaml.example secret.yaml`
 * Install ansible
 ```shell
 ansible-galaxy collection install amazon.aws
