@@ -57,11 +57,12 @@
     - name: export the config file
       command: "{{ kops_path }} export --name {{ cluster_name }} kubecfg --admin --state s3://{{ s3name }} --kubeconfig /tmp/{{ cluster_name }}-aws.yaml"
 
-    - name: validate the cluster (wait up to 5 minutes) only if starting else termninate ctrl+c
-      command: "{{ kops_path }} validate cluster --state={{ state_store }}  --count 3 --wait 5m"
+    - name: Validate the cluster
+      command: "{{ kops_path }} validate cluster --state={{ state_store }}"
       environment:
         KUBECONFIG: "/tmp/{{ cluster_name }}-aws.yaml"
       register: validate_output
+      # ignore_errors: true
       retries: 60
       delay: 10
       until: "'is ready' in validate_output.stdout"

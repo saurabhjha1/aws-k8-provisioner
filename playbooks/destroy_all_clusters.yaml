@@ -4,7 +4,7 @@
   vars_files:
     - variables.yml
     - secret.yaml
-  gather_facts: false
+  gather_facts: true
   tasks:
     - name: Set kops path for Linux
       set_fact:
@@ -21,6 +21,10 @@
       register: cluster_list_output
       ignore_errors: true
 
+    - name: Check if no clusters are found
+      meta: end_play
+      when: "'Error: no clusters found' in cluster_list_output.stderr or 'Error: no clusters found' in cluster_list_output.stdout"
+
     - name: Parse JSON output to list of cluster names
       set_fact:
         cluster_names: "{{ cluster_list_output.stdout | from_json | map(attribute='metadata.name') | list }}"
@@ -29,6 +33,7 @@
     - name: Confirm deletion of all clusters
       pause:
         prompt: "Are you sure you want to delete ALL clusters {{ cluster_names }}? (Press enter to continue or Ctrl+C to abort)"
+      when: cluster_list_output.stdout != ""
 
     - name: Delete kops clusters
       command:

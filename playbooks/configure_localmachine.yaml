@@ -89,7 +89,6 @@
         executable: /bin/bash
         creates: "{{ ansible_env.HOME }}/.linkerd2/bin/linkerd"
 
-    # Update PATH for Linkerd in bash
     - name: Update PATH for Linkerd in bash
       lineinfile:
         path: "{{ ansible_env.HOME }}/.bashrc"
@@ -97,21 +96,19 @@
         create: yes
       when: user_shell == 'bash'
 
-    # Update PATH for Linkerd in zsh
     - name: Update PATH for Linkerd in zsh
       lineinfile:
         path: "{{ ansible_env.HOME }}/.zshrc"
         line: 'export PATH=$PATH:{{ ansible_env.HOME }}/.linkerd2/bin'
         create: yes
       when: user_shell == 'zsh'
-        # Source bashrc to update PATH (bash)
+  
     - name: Source bashrc to update PATH
       shell: source "{{ ansible_env.HOME }}/.bashrc"
       args:
         executable: /bin/bash
       when: user_shell == 'bash'
 
-    # Source zshrc to update PATH (zsh)
     - name: Source zshrc to update PATH
       shell: source {{ ansible_env.HOME }}/.zshrc
       args:
