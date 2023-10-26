@@ -4,7 +4,15 @@
 
 help:
 	@echo "Makefile commands:"
-	@echo "test   - Run the test playbook"
+	@echo "configure_localmachine -- [onetime] configures the localmachine to run this repository"
+	@echo "configure_aws_access -- [onetime] configure aws creddentials"
+	@echo "create -- creates the cluster"
+	@echo "delete -- deletes the clister"
+	@echo "destroy_all_clusters -- destroys all clusters stored in s3 bucket"
+	@echo "get_kcfg -- gets the kubeconfig file in /tmp/<cluster-name>"
+	@echo "list_clusters -- lists the clusters stored in s3"
+	@echo "start/suspend/resize -- resize, start or suspend the cluster"
+	@echo "install_istio_monitoring -- install istio/prometheus/cadvisor monitoring"
 	@echo "help   - Display this help information"
 
 

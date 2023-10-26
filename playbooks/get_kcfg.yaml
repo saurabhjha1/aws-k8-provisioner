@@ -7,7 +7,7 @@
     - secret.yaml
   vars_prompt:
     - name: "cluster_name"
-      prompt: "provide the partial cluster identifier"
+      prompt: "provide the cluster name"
       private: no
   tasks:
 
