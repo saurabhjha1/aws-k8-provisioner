@@ -9,7 +9,7 @@
     - name: Set kops path for Linux
       set_fact:
         kops_path: "/usr/local/bin/kops"
-      when: ansible_distribution == 'Ubuntu'
+      when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Fedora' or ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
     - name: Set kops path for macOS
       set_fact:
         kops_path: "/opt/homebrew/bin/kops"
