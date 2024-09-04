@@ -18,7 +18,7 @@ help:
 
 configure_localmachine:
 	@echo "configure playbooks/variables.yaml and playbooks/secret.yaml"
-	ansible-playbook playbooks/configure_localmachine.yaml
+	ansible-playbook playbooks/configure_localmachine.yaml --ask-become-pass
 
 configure_aws_access:
 	ansible-playbook playbooks/configure_aws_user_and_storage.yaml
