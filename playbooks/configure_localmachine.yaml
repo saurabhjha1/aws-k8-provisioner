@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: true
   vars_files:
-    - variables.yml
+    - variables.yaml
   tasks:
     # Determine the shell being used
     - name: Determine shell

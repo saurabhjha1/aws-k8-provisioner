@@ -3,7 +3,7 @@
   vars:
     state_store: "s3://{{ s3name }}"
   vars_files:
-    - variables.yml
+    - variables.yaml
     - secret.yaml
   gather_facts: true
   vars_prompt:

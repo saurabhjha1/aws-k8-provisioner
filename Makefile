@@ -7,6 +7,7 @@ help:
 	@echo "configure_localmachine -- [onetime] configures the localmachine to run this repository"
 	@echo "configure_aws_access -- [onetime] configure aws creddentials"
 	@echo "create -- creates the cluster"
+	@echo "create_batch -- creates the N cluster"
 	@echo "delete -- deletes the clister"
 	@echo "destroy_all_clusters -- destroys all clusters stored in s3 bucket"
 	@echo "get_kcfg -- gets the kubeconfig file in /tmp/<cluster-name>"
@@ -26,9 +27,16 @@ configure_aws_access:
 create:
 	ansible-playbook playbooks/create_cluster.yaml
 
+batch_create:
+	ansible-playbook -vvv playbooks/batch_create_cluster.yaml
+
 delete: list_clusters
 	ansible-playbook playbooks/delete_cluster.yaml
 
+
+batch_delete: 
+	ansible-playbook -vv playbooks/batch_delete_cluster.yaml
+	
 destroy_all_clusters:
 	ansible-playbook playbooks/destroy_all_clusters.yaml
 

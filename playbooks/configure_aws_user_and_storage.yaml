@@ -2,7 +2,7 @@
 - name: Configure AWS CLI
   hosts: localhost
   vars_files:
-    - variables.yml
+    - variables.yaml
     - secret.yaml
 
   vars_prompt:

@@ -2,7 +2,7 @@
 - name: Delete Kubernetes Cluster using kops
   hosts: localhost
   vars_files:
-    - variables.yml
+    - variables.yaml
     - secret.yaml
   vars_prompt:
     - name: "cluster_name"

@@ -2,7 +2,7 @@
   vars:
     state_store: "s3://{{ s3name }}"
   vars_files:
-    - variables.yml
+    - variables.yaml
     - secret.yaml
 
   vars_prompt:
@@ -73,9 +73,13 @@
 
     - name: Install prom-stack
       command: helm install prom-stack prometheus-community/prometheus -n kube-system
+      environment:
+        KUBECONFIG: "/tmp/{{ cluster_name }}.yaml"
 
     - name: Apply metrics-server components
       command: kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+      environment:
+        KUBECONFIG: "/tmp/{{ cluster_name }}.yaml"
 
     - name: Create Istio Namespace
       command:
@@ -95,6 +99,8 @@
     - name: Display result of installing Istio Base
       debug:
         msg: "{{ install_istio_base_output.stdout_lines }}"
+      environment:
+        KUBECONFIG: "/tmp/{{ cluster_name }}.yaml"
 
     - name: Install istio discovery chart
       command:

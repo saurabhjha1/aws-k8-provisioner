@@ -2,7 +2,7 @@
 - name: Delete All Kubernetes Clusters Managed by kops
   hosts: localhost
   vars_files:
-    - variables.yml
+    - variables.yaml
     - secret.yaml
   gather_facts: true
   tasks:

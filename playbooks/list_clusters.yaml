@@ -1,7 +1,7 @@
 - name: List all kops clusters
   hosts: localhost
   vars_files:
-    - variables.yml
+    - variables.yaml
     - secret.yaml
   tasks:
     - name: Set kops path for Linux
