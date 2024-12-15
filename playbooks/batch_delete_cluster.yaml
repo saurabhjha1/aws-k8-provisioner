@@ -1,0 +1,49 @@
+---
+- name: Delete Kubernetes Clusters using kops
+  hosts: localhost
+  vars_files:
+    - secret.yaml
+    - batch_create_variables.yaml
+
+  gather_facts: true
+  collections:
+    - community.aws
+
+  tasks:
+    - name: Set kops path for Linux
+      set_fact:
+        kops_path: "/usr/local/bin/kops"
+      when: ansible_distribution in ['Ubuntu', 'Fedora', 'CentOS', 'RedHat']
+      
+    - name: Set kops path for macOS
+      set_fact:
+        kops_path: "/opt/homebrew/bin/kops"
+      when: ansible_distribution == 'MacOSX'
+
+    - name: Prepare cluster list
+      set_fact:
+        clusters: "{{ range(1, cluster_count|int + 1) | list }}"
+
+    - name: Delete each cluster asynchronously
+      command: >
+        {{ kops_path }} delete cluster
+        --name={{ cluster_name_prefix }}-{{ instance_type }}-aws-{{ item }}.k8s.local
+        --yes
+        --state s3://{{ s3name }}
+      loop: "{{ clusters }}"
+      async: 3600 # Allow up to 1 hour for each task
+      poll: 0     # Fire and forget for parallel execution
+      register: async_results
+
+    - name: Wait for all deletions to complete
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      loop: "{{ async_results.results }}"
+      register: deletion_status
+      until: deletion_status.finished
+      retries: 30
+      delay: 60
+
+    - name: Print deletion results
+      debug:
+        var: deletion_status
