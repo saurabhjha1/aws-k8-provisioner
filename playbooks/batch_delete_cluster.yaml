@@ -10,7 +10,7 @@
     state_store: "s3://{{ s3name }}"
     max_deletion_attempts: 5
     deletion_delay_seconds: 30
-    batch_size: 15
+    batch_size: 8
     async_timeout: 900
     poll_interval: 60
 
